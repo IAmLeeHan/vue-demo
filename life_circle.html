@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./js/vue.js"></script>
+</head>
+<body>
+    
+    <div id="app"> 
+        <my-component></my-component>
+    </div>
+
+    <template id = "my-component">
+        <div class = "component">
+            <h1 id = "title">hello!{{message}}</h1>
+            <input type="text" v-model="message">
+            <button @click = "destroy">销毁组件</button>
+        </div>
+    </template>
+
+        
+
+    <script>
+        //组件从创建到销毁的一系列过程就叫做组件的生命周期
+        // vue在整个生命周期中为我们提供了一些钩子函数
+        // 钩子函数的特点就是在生命周期的某一个时刻去进行触发
+
+        // 组件的生命周期钩子函数可以分为三个过程：初始化、运行中、销毁
+        // 初始化阶段的钩子函数：   beforeCreate   created     beforeMount     mounted
+        // 运行中阶段的钩子函数：   beforeUpdate   updated
+        // 销毁阶段的钩子函数：     beforeDestroy  destroyed
+       
+        //初始化阶段
+        // 1、一个组件的生命周期都是从new开始的
+        // 2、实例化之后，会初始化一些事件与生命周期相关的配置
+
+        Vue.component("my-component",{
+            template:"#my-component",
+            data(){
+                return {
+                    message:1,
+                    timer:this.timer
+                }
+            },
+            methods: {
+                destroy(){
+                    this.$destroy();
+                }
+            },
+            // 3、此钩子函数不能获取到数据，dom元素也没有渲染出来。
+            // 此钩子函数一般不会用来做什么事情
+            beforeCreate() {
+                console.log("beforeCreate....")
+                console.log(this.message,document.getElementById("title"))
+            },
+            // 4、此钩子函数 数据已经挂载，但是dom节点还是没有渲染出来
+            // 在这个钩子函数里面，如果同步的更改数据的话，不会影响运行中的钩子函数
+            // 可以用来发送ajax请求... 也可以用来做一些初始化相关操作
+            created() {
+                console.log("created....")
+                console.log(this.message,document.getElementById("title"))
+                timer = setInterval(() => {
+                    console.log("setInterval...")
+                    this.message++
+                }, 1000);
+            },
+
+            // 5、接下来的过程是组件或者实例去查找各自的模板，然后将其编译成虚拟dom放入大render函数中
+
+            // 6、beforeMount钩子函数 代表dom节点马上就要别渲染出来了，但是还没有真正的渲染出来
+            // 此钩子函数跟created钩子函数基本上一样，也可以做一些初始化数据的操作
+            beforeMount() {
+                console.log("beforeMount....")
+                console.log(this.message,document.getElementById("title"))
+            },
+           /*  render() {//生成虚拟dom 然后去替换相应地el 渲染成真实dom 做一个初始化渲染
+                console.log("render....")
+            }, */
+
+            // 7、mounted是生命周期初始化阶段的最后一个钩子函数
+            // 数据已经挂载完毕了，真实dom也可以获取到了
+            mounted() {
+                console.log("mounted....")
+                console.log(this.message,document.getElementById("title"))
+            },
+            // 8、运行中钩子函数beforeUpdate默认是不会执行的
+            // 当数据更改的时候，才会执行运行时钩子函数beforeUpdate
+            // 这个钩子函数获取的依然是更新之前的数据（获取的是更新前的dom内容）
+            // 在这个钩子函数里，千万不能对数据进行更改，会造成死循环
+            beforeUpdate() {
+                console.log("beforeUpdate....",document.getElementById("title").innerHTML)
+            },
+            // 9、这个钩子函数获取的数据是更新后的数据
+            // 生成新的虚拟dom 跟上一次的虚拟dom结构进行比较，比较出来差异（diff算法）然后渲染真实dom
+            // 当数据引发dom重新渲染的时候，在updated钩子函数里面就会获取最新的真实dom了
+            updated() {
+                console.log("updated....",document.getElementById("title").innerHTML)
+            },
+            // 10、销毁阶段的钩子函数   销毁前
+            // 在这个钩子函数里，我们可以做一些善后的操作
+            // 例如我们可以清空一下全局的定时器（created钩子函数绑定的初始化阶段的事件）
+            beforeDestroy() {
+                console.log("beforeDestroy....")
+                clearInterval(timer)
+            },
+            //11、 销毁后
+            // 只是销毁组件的双向事件绑定、事件监听watcher相关的都被移除掉了
+            // 但是组件的真实dom还是存在的
+            destroyed() {
+                console.log("destroyed....")
+            },
+        })
+        new Vue({}).$mount("#app");
+
+      
+    </script>
+</body>
+</html>
